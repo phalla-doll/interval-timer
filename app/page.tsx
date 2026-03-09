@@ -19,7 +19,7 @@ export default function IntervalTimer() {
   // Audio context ref for beeps
   const audioCtxRef = useRef<AudioContext | null>(null);
 
-  const playBeep = (frequency: number, duration: number, type: OscillatorType = 'sine') => {
+  const playBeep = React.useCallback((frequency: number, duration: number, type: OscillatorType = 'sine') => {
     if (!soundEnabled) return;
     try {
       if (!audioCtxRef.current) {
@@ -46,7 +46,7 @@ export default function IntervalTimer() {
     } catch (e) {
       console.error("Audio playback failed", e);
     }
-  };
+  }, [soundEnabled]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -95,7 +95,7 @@ export default function IntervalTimer() {
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isRunning, currentPhase, currentSet, sets, workTime, restTime, soundEnabled]);
+  }, [isRunning, currentPhase, currentSet, sets, workTime, restTime, playBeep]);
 
   const startWorkout = () => {
     if (workTime === 0) return;
