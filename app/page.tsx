@@ -197,8 +197,8 @@ export default function IntervalTimer() {
 
   // Setup View
   return (
-    <div className="min-h-screen bg-black text-white font-sans p-6 md:p-12 selection:bg-white selection:text-black">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-black text-white font-sans p-6 md:p-12 selection:bg-white selection:text-black flex flex-col justify-center">
+      <div className="max-w-4xl w-full mx-auto">
         <div className="flex justify-between items-end mb-12">
           <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none">
             Interval<br/><span className="text-[#00FF00]">Timer</span>
