@@ -161,12 +161,12 @@ export default function IntervalTimer() {
           </button>
         </div>
         
-        <h2 className={`text-6xl md:text-9xl font-black uppercase tracking-tighter mb-2 ${textColor}`}>
+        <h2 className={`text-[clamp(4rem,12vw,10rem)] font-black uppercase tracking-tighter mb-2 ${textColor}`}>
           {isWork ? 'WORK' : isRest ? 'REST' : 'DONE'}
         </h2>
         
         {!isFinished && (
-          <div className={`text-[8rem] sm:text-[12rem] md:text-[18rem] lg:text-[24rem] font-black leading-none tracking-tighter tabular-nums ${textColor}`}>
+          <div className={`text-[clamp(6rem,25vw,24rem)] font-black leading-none tracking-tighter tabular-nums ${textColor}`}>
             {formatTime(timeLeft)}
           </div>
         )}
