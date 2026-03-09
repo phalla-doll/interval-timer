@@ -1,9 +1,17 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, X, Minus, Plus, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, X, Minus, Plus, Volume2, VolumeX, Save, Trash2 } from 'lucide-react';
 
 type Phase = 'idle' | 'work' | 'rest' | 'finished';
+
+type Preset = {
+  id: string;
+  name: string;
+  workTime: number;
+  restTime: number;
+  sets: number;
+};
 
 export default function IntervalTimer() {
   const [workTime, setWorkTime] = useState(60); // 1 min default
@@ -15,6 +23,49 @@ export default function IntervalTimer() {
   const [currentSet, setCurrentSet] = useState(1);
   const [isRunning, setIsRunning] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+
+  const [presets, setPresets] = useState<Preset[]>([]);
+  const [presetName, setPresetName] = useState('');
+  const [isSavingPreset, setIsSavingPreset] = useState(false);
+
+  useEffect(() => {
+    const savedPresets = localStorage.getItem('intervalTimerPresets');
+    if (savedPresets) {
+      try {
+        setPresets(JSON.parse(savedPresets));
+      } catch (e) {
+        console.error("Failed to parse presets", e);
+      }
+    }
+  }, []);
+
+  const savePreset = () => {
+    if (!presetName.trim()) return;
+    const newPreset: Preset = {
+      id: Date.now().toString(),
+      name: presetName.trim(),
+      workTime,
+      restTime,
+      sets,
+    };
+    const updatedPresets = [...presets, newPreset];
+    setPresets(updatedPresets);
+    localStorage.setItem('intervalTimerPresets', JSON.stringify(updatedPresets));
+    setPresetName('');
+    setIsSavingPreset(false);
+  };
+
+  const loadPreset = (preset: Preset) => {
+    setWorkTime(preset.workTime);
+    setRestTime(preset.restTime);
+    setSets(preset.sets);
+  };
+
+  const deletePreset = (id: string) => {
+    const updatedPresets = presets.filter(p => p.id !== id);
+    setPresets(updatedPresets);
+    localStorage.setItem('intervalTimerPresets', JSON.stringify(updatedPresets));
+  };
 
   // Audio context ref for beeps
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -261,10 +312,84 @@ export default function IntervalTimer() {
         <button 
           onClick={startWorkout}
           disabled={workTime === 0}
-          className="w-full py-8 bg-white text-black text-4xl md:text-5xl font-black uppercase tracking-widest hover:bg-[#00FF00] hover:scale-[1.02] transition-all disabled:opacity-50 disabled:hover:bg-white disabled:hover:scale-100"
+          className="w-full py-8 bg-white text-black text-4xl md:text-5xl font-black uppercase tracking-widest hover:bg-[#00FF00] hover:scale-[1.02] transition-all disabled:opacity-50 disabled:hover:bg-white disabled:hover:scale-100 mb-12"
         >
           Start Workout
         </button>
+
+        {/* Presets Section */}
+        <div className="border-4 border-white p-6 bg-black">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <h2 className="text-2xl font-bold uppercase tracking-widest text-white">Presets</h2>
+            
+            {!isSavingPreset ? (
+              <button 
+                onClick={() => setIsSavingPreset(true)}
+                className="flex items-center gap-2 px-4 py-2 border-2 border-white hover:bg-white hover:text-black font-bold uppercase text-sm transition-colors"
+              >
+                <Save size={18} /> Save Current
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <input 
+                  type="text" 
+                  value={presetName}
+                  onChange={(e) => setPresetName(e.target.value)}
+                  placeholder="Preset Name"
+                  className="bg-transparent border-2 border-white px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-[#00FF00] w-full md:w-48"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') savePreset();
+                    if (e.key === 'Escape') setIsSavingPreset(false);
+                  }}
+                />
+                <button 
+                  onClick={savePreset}
+                  disabled={!presetName.trim()}
+                  className="px-4 py-2 bg-white text-black font-bold uppercase text-sm hover:bg-[#00FF00] disabled:opacity-50 transition-colors"
+                >
+                  Save
+                </button>
+                <button 
+                  onClick={() => setIsSavingPreset(false)}
+                  className="p-2 border-2 border-white hover:bg-white hover:text-black transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {presets.length === 0 ? (
+            <p className="text-gray-500 italic">No saved presets yet.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {presets.map(preset => (
+                <div key={preset.id} className="border-2 border-gray-700 p-4 flex flex-col hover:border-white transition-colors group">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-bold text-lg truncate pr-2">{preset.name}</h3>
+                    <button 
+                      onClick={() => deletePreset(preset.id)}
+                      className="text-gray-500 hover:text-red-500 transition-colors"
+                      aria-label="Delete preset"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                  <div className="text-sm text-gray-400 mb-4 font-mono">
+                    W: {formatTime(preset.workTime)} | R: {formatTime(preset.restTime)} | S: {preset.sets}
+                  </div>
+                  <button 
+                    onClick={() => loadPreset(preset)}
+                    className="mt-auto w-full py-2 border border-white hover:bg-white hover:text-black font-bold uppercase text-sm transition-colors"
+                  >
+                    Load
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
