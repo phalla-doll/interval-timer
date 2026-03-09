@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, X, Minus, Plus, Volume2, VolumeX, Save, Trash2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 type Phase = 'idle' | 'work' | 'rest' | 'finished';
 
@@ -205,28 +206,43 @@ export default function IntervalTimer() {
           </div>
           <button 
             onClick={stopWorkout} 
-            className={`p-3 border-4 border-current hover:bg-black hover:text-white transition-colors ${textColor}`}
+            className={`p-3 border-4 border-current hover:bg-black hover:text-white transition-all active:scale-90 ${textColor}`}
             aria-label="Stop Workout"
           >
             <X size={32} strokeWidth={3} />
           </button>
         </div>
         
-        <h2 className={`text-[clamp(4rem,12vw,10rem)] font-black uppercase tracking-tighter mb-2 ${textColor}`}>
-          {isWork ? 'WORK' : isRest ? 'REST' : 'DONE'}
-        </h2>
+        <AnimatePresence mode="wait">
+          <motion.h2 
+            key={currentPhase}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.2 }}
+            className={`text-[clamp(4rem,12vw,10rem)] font-black uppercase tracking-tighter mb-2 ${textColor}`}
+          >
+            {isWork ? 'WORK' : isRest ? 'REST' : 'DONE'}
+          </motion.h2>
+        </AnimatePresence>
         
         {!isFinished && (
-          <div className={`text-[clamp(6rem,25vw,24rem)] font-black leading-none tracking-tighter tabular-nums ${textColor}`}>
+          <motion.div 
+            key={timeLeft}
+            initial={{ opacity: 0.8, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.15 }}
+            className={`text-[clamp(6rem,25vw,24rem)] font-black leading-none tracking-tighter tabular-nums ${textColor}`}
+          >
             {formatTime(timeLeft)}
-          </div>
+          </motion.div>
         )}
         
         {!isFinished && (
           <div className="absolute bottom-12 flex gap-8">
             <button 
               onClick={() => setIsRunning(!isRunning)} 
-              className={`p-6 md:p-8 border-8 border-current rounded-full hover:bg-black hover:text-white transition-colors ${textColor}`}
+              className={`p-6 md:p-8 border-8 border-current rounded-full hover:bg-black hover:text-white transition-all active:scale-90 ${textColor}`}
               aria-label={isRunning ? "Pause" : "Play"}
             >
               {isRunning ? <Pause size={48} strokeWidth={3} /> : <Play size={48} strokeWidth={3} className="ml-2" />}
@@ -237,7 +253,7 @@ export default function IntervalTimer() {
         {isFinished && (
           <button 
             onClick={stopWorkout} 
-            className="mt-12 px-12 py-6 border-8 border-black text-black text-4xl font-black uppercase hover:bg-black hover:text-[#FFFF00] transition-colors"
+            className="mt-12 px-12 py-6 border-8 border-black text-black text-4xl font-black uppercase hover:bg-black hover:text-[#FFFF00] transition-all active:scale-95"
           >
             Finish
           </button>
@@ -256,7 +272,7 @@ export default function IntervalTimer() {
           </h1>
           <button 
             onClick={() => setSoundEnabled(!soundEnabled)}
-            className="p-3 border-2 border-white hover:bg-white hover:text-black transition-colors"
+            className="p-3 border-2 border-white hover:bg-white hover:text-black transition-all active:scale-95"
             aria-label={soundEnabled ? "Disable Sound" : "Enable Sound"}
           >
             {soundEnabled ? <Volume2 size={28} strokeWidth={2.5} /> : <VolumeX size={28} strokeWidth={2.5} />}
@@ -271,10 +287,10 @@ export default function IntervalTimer() {
               {formatTime(workTime)}
             </div>
             <div className="grid grid-cols-2 gap-3 w-full">
-              <button onClick={() => setWorkTime(Math.max(0, workTime - 60))} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl">-1m</button>
-              <button onClick={() => setWorkTime(workTime + 60)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl">+1m</button>
-              <button onClick={() => setWorkTime(Math.max(0, workTime - 5))} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl">-5s</button>
-              <button onClick={() => setWorkTime(workTime + 5)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl">+5s</button>
+              <button onClick={() => setWorkTime(Math.max(0, workTime - 60))} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">-1m</button>
+              <button onClick={() => setWorkTime(workTime + 60)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">+1m</button>
+              <button onClick={() => setWorkTime(Math.max(0, workTime - 5))} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">-5s</button>
+              <button onClick={() => setWorkTime(workTime + 5)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">+5s</button>
             </div>
           </div>
 
@@ -285,10 +301,10 @@ export default function IntervalTimer() {
               {formatTime(restTime)}
             </div>
             <div className="grid grid-cols-2 gap-3 w-full">
-              <button onClick={() => setRestTime(Math.max(0, restTime - 60))} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl">-1m</button>
-              <button onClick={() => setRestTime(restTime + 60)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl">+1m</button>
-              <button onClick={() => setRestTime(Math.max(0, restTime - 5))} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl">-5s</button>
-              <button onClick={() => setRestTime(restTime + 5)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl">+5s</button>
+              <button onClick={() => setRestTime(Math.max(0, restTime - 60))} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">-1m</button>
+              <button onClick={() => setRestTime(restTime + 60)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">+1m</button>
+              <button onClick={() => setRestTime(Math.max(0, restTime - 5))} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">-5s</button>
+              <button onClick={() => setRestTime(restTime + 5)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">+5s</button>
             </div>
           </div>
 
@@ -299,10 +315,10 @@ export default function IntervalTimer() {
               {sets}
             </div>
             <div className="grid grid-cols-2 gap-3 w-full mt-auto">
-              <button onClick={() => setSets(Math.max(1, sets - 1))} className="py-4 border-2 border-white hover:bg-white hover:text-black flex justify-center items-center">
+              <button onClick={() => setSets(Math.max(1, sets - 1))} className="py-4 border-2 border-white hover:bg-white hover:text-black flex justify-center items-center transition-all active:scale-95">
                 <Minus size={32} strokeWidth={3} />
               </button>
-              <button onClick={() => setSets(sets + 1)} className="py-4 border-2 border-white hover:bg-white hover:text-black flex justify-center items-center">
+              <button onClick={() => setSets(sets + 1)} className="py-4 border-2 border-white hover:bg-white hover:text-black flex justify-center items-center transition-all active:scale-95">
                 <Plus size={32} strokeWidth={3} />
               </button>
             </div>
@@ -312,7 +328,7 @@ export default function IntervalTimer() {
         <button 
           onClick={startWorkout}
           disabled={workTime === 0}
-          className="w-full py-8 bg-white text-black text-4xl md:text-5xl font-black uppercase tracking-widest hover:bg-[#00FF00] hover:scale-[1.02] transition-all disabled:opacity-50 disabled:hover:bg-white disabled:hover:scale-100 mb-12"
+          className="w-full py-8 bg-white text-black text-4xl md:text-5xl font-black uppercase tracking-widest hover:bg-[#00FF00] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:hover:bg-white disabled:hover:scale-100 disabled:active:scale-100 mb-12"
         >
           Start Workout
         </button>
@@ -325,7 +341,7 @@ export default function IntervalTimer() {
             {!isSavingPreset ? (
               <button 
                 onClick={() => setIsSavingPreset(true)}
-                className="flex items-center gap-2 px-4 py-2 border-2 border-white hover:bg-white hover:text-black font-bold uppercase text-sm transition-colors"
+                className="flex items-center gap-2 px-4 py-2 border-2 border-white hover:bg-white hover:text-black font-bold uppercase text-sm transition-all active:scale-95"
               >
                 <Save size={18} /> Save Current
               </button>
@@ -346,13 +362,13 @@ export default function IntervalTimer() {
                 <button 
                   onClick={savePreset}
                   disabled={!presetName.trim()}
-                  className="px-4 py-2 bg-white text-black font-bold uppercase text-sm hover:bg-[#00FF00] disabled:opacity-50 transition-colors"
+                  className="px-4 py-2 bg-white text-black font-bold uppercase text-sm hover:bg-[#00FF00] disabled:opacity-50 transition-all active:scale-95"
                 >
                   Save
                 </button>
                 <button 
                   onClick={() => setIsSavingPreset(false)}
-                  className="p-2 border-2 border-white hover:bg-white hover:text-black transition-colors"
+                  className="p-2 border-2 border-white hover:bg-white hover:text-black transition-all active:scale-95"
                 >
                   <X size={18} />
                 </button>
@@ -370,7 +386,7 @@ export default function IntervalTimer() {
                     <h3 className="font-bold text-lg truncate pr-2">{preset.name}</h3>
                     <button 
                       onClick={() => deletePreset(preset.id)}
-                      className="text-gray-500 hover:text-red-500 transition-colors"
+                      className="text-gray-500 hover:text-red-500 transition-all active:scale-90"
                       aria-label="Delete preset"
                     >
                       <Trash2 size={18} />
@@ -381,7 +397,7 @@ export default function IntervalTimer() {
                   </div>
                   <button 
                     onClick={() => loadPreset(preset)}
-                    className="mt-auto w-full py-2 border border-white hover:bg-white hover:text-black font-bold uppercase text-sm transition-colors"
+                    className="mt-auto w-full py-2 border border-white hover:bg-white hover:text-black font-bold uppercase text-sm transition-all active:scale-95"
                   >
                     Load
                   </button>
