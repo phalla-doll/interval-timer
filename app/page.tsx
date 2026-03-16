@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, X, Minus, Plus, Volume2, VolumeX, Save, Trash2 } from 'lucide-react';
+import { Play, Pause, X, Minus, Plus, Volume2, VolumeX, Save, Trash2, ArrowUp, ArrowDown, Edit2, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 type Phase = 'idle' | 'work' | 'rest' | 'finished';
@@ -28,6 +28,8 @@ export default function IntervalTimer() {
   const [presets, setPresets] = useState<Preset[]>([]);
   const [presetName, setPresetName] = useState('');
   const [isSavingPreset, setIsSavingPreset] = useState(false);
+  const [editingPresetId, setEditingPresetId] = useState<string | null>(null);
+  const [editingPresetName, setEditingPresetName] = useState('');
 
   useEffect(() => {
     const savedPresets = localStorage.getItem('intervalTimerPresets');
@@ -64,6 +66,45 @@ export default function IntervalTimer() {
 
   const deletePreset = (id: string) => {
     const updatedPresets = presets.filter(p => p.id !== id);
+    setPresets(updatedPresets);
+    localStorage.setItem('intervalTimerPresets', JSON.stringify(updatedPresets));
+  };
+
+  const movePresetUp = (index: number) => {
+    if (index === 0) return;
+    const updatedPresets = [...presets];
+    [updatedPresets[index - 1], updatedPresets[index]] = [updatedPresets[index], updatedPresets[index - 1]];
+    setPresets(updatedPresets);
+    localStorage.setItem('intervalTimerPresets', JSON.stringify(updatedPresets));
+  };
+
+  const movePresetDown = (index: number) => {
+    if (index === presets.length - 1) return;
+    const updatedPresets = [...presets];
+    [updatedPresets[index + 1], updatedPresets[index]] = [updatedPresets[index], updatedPresets[index + 1]];
+    setPresets(updatedPresets);
+    localStorage.setItem('intervalTimerPresets', JSON.stringify(updatedPresets));
+  };
+
+  const startEditingPreset = (preset: Preset) => {
+    setEditingPresetId(preset.id);
+    setEditingPresetName(preset.name);
+  };
+
+  const saveEditedPreset = () => {
+    if (!editingPresetName.trim() || !editingPresetId) return;
+    const updatedPresets = presets.map(p => 
+      p.id === editingPresetId ? { ...p, name: editingPresetName.trim() } : p
+    );
+    setPresets(updatedPresets);
+    localStorage.setItem('intervalTimerPresets', JSON.stringify(updatedPresets));
+    setEditingPresetId(null);
+  };
+
+  const updatePresetToCurrent = (id: string) => {
+    const updatedPresets = presets.map(p => 
+      p.id === id ? { ...p, workTime, restTime, sets } : p
+    );
     setPresets(updatedPresets);
     localStorage.setItem('intervalTimerPresets', JSON.stringify(updatedPresets));
   };
@@ -425,27 +466,71 @@ export default function IntervalTimer() {
             <p className="text-gray-500 italic">No saved presets yet.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {presets.map(preset => (
+              {presets.map((preset, index) => (
                 <div key={preset.id} className="border-2 border-gray-700 p-4 flex flex-col hover:border-white transition-colors group">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-lg truncate pr-2">{preset.name}</h3>
+                    {editingPresetId === preset.id ? (
+                      <div className="flex items-center gap-2 w-full pr-2">
+                        <input
+                          type="text"
+                          value={editingPresetName}
+                          onChange={(e) => setEditingPresetName(e.target.value)}
+                          className="bg-transparent border-b-2 border-white text-white focus:outline-none focus:border-[#00FF00] w-full font-bold text-lg"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveEditedPreset();
+                            if (e.key === 'Escape') setEditingPresetId(null);
+                          }}
+                        />
+                        <button onClick={saveEditedPreset} className="text-[#00FF00] hover:text-white transition-colors">
+                          <Check size={18} />
+                        </button>
+                        <button onClick={() => setEditingPresetId(null)} className="text-gray-500 hover:text-white transition-colors">
+                          <X size={18} />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <h3 className="font-bold text-lg truncate pr-2">{preset.name}</h3>
+                        <div className="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => startEditingPreset(preset)} className="text-gray-500 hover:text-white transition-colors p-1" aria-label="Edit preset name">
+                            <Edit2 size={16} />
+                          </button>
+                          <button onClick={() => deletePreset(preset.id)} className="text-gray-500 hover:text-red-500 transition-colors p-1" aria-label="Delete preset">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  
+                  <div className="text-sm text-gray-400 mb-4 font-mono flex justify-between items-center">
+                    <span>W: {formatTime(preset.workTime)} | R: {formatTime(preset.restTime)} | S: {preset.sets}</span>
+                    <div className="flex gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button disabled={index === 0} onClick={() => movePresetUp(index)} className="text-gray-500 hover:text-white disabled:opacity-30 disabled:hover:text-gray-500 transition-colors p-1">
+                        <ArrowUp size={16} />
+                      </button>
+                      <button disabled={index === presets.length - 1} onClick={() => movePresetDown(index)} className="text-gray-500 hover:text-white disabled:opacity-30 disabled:hover:text-gray-500 transition-colors p-1">
+                        <ArrowDown size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-auto grid grid-cols-2 gap-2">
                     <button 
-                      onClick={() => deletePreset(preset.id)}
-                      className="text-gray-500 hover:text-red-500 transition-all active:scale-90"
-                      aria-label="Delete preset"
+                      onClick={() => loadPreset(preset)}
+                      className="w-full py-2 border border-white hover:bg-white hover:text-black font-bold uppercase text-sm transition-all active:scale-95"
                     >
-                      <Trash2 size={18} />
+                      Load
+                    </button>
+                    <button 
+                      onClick={() => updatePresetToCurrent(preset.id)}
+                      className="w-full py-2 border border-gray-600 text-gray-400 hover:border-[#00FF00] hover:text-[#00FF00] font-bold uppercase text-sm transition-all active:scale-95"
+                      title="Update with current timer settings"
+                    >
+                      Update
                     </button>
                   </div>
-                  <div className="text-sm text-gray-400 mb-4 font-mono">
-                    W: {formatTime(preset.workTime)} | R: {formatTime(preset.restTime)} | S: {preset.sets}
-                  </div>
-                  <button 
-                    onClick={() => loadPreset(preset)}
-                    className="mt-auto w-full py-2 border border-white hover:bg-white hover:text-black font-bold uppercase text-sm transition-all active:scale-95"
-                  >
-                    Load
-                  </button>
                 </div>
               ))}
             </div>
