@@ -173,6 +173,21 @@ export default function IntervalTimer() {
     setCurrentSet(1);
   };
 
+  const adjustWorkTime = (amount: number) => {
+    setWorkTime(prev => Math.max(0, prev + amount));
+    playBeep(600, 0.05, 'sine');
+  };
+
+  const adjustRestTime = (amount: number) => {
+    setRestTime(prev => Math.max(0, prev + amount));
+    playBeep(600, 0.05, 'sine');
+  };
+
+  const adjustSets = (amount: number) => {
+    setSets(prev => Math.max(1, prev + amount));
+    playBeep(600, 0.05, 'sine');
+  };
+
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -287,10 +302,10 @@ export default function IntervalTimer() {
               {formatTime(workTime)}
             </div>
             <div className="grid grid-cols-2 gap-3 w-full">
-              <button onClick={() => setWorkTime(Math.max(0, workTime - 60))} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">-1m</button>
-              <button onClick={() => setWorkTime(workTime + 60)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">+1m</button>
-              <button onClick={() => setWorkTime(Math.max(0, workTime - 5))} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">-5s</button>
-              <button onClick={() => setWorkTime(workTime + 5)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">+5s</button>
+              <button onClick={() => adjustWorkTime(-60)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">-1m</button>
+              <button onClick={() => adjustWorkTime(60)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">+1m</button>
+              <button onClick={() => adjustWorkTime(-5)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">-5s</button>
+              <button onClick={() => adjustWorkTime(5)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">+5s</button>
             </div>
           </div>
 
@@ -301,10 +316,10 @@ export default function IntervalTimer() {
               {formatTime(restTime)}
             </div>
             <div className="grid grid-cols-2 gap-3 w-full">
-              <button onClick={() => setRestTime(Math.max(0, restTime - 60))} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">-1m</button>
-              <button onClick={() => setRestTime(restTime + 60)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">+1m</button>
-              <button onClick={() => setRestTime(Math.max(0, restTime - 5))} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">-5s</button>
-              <button onClick={() => setRestTime(restTime + 5)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">+5s</button>
+              <button onClick={() => adjustRestTime(-60)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">-1m</button>
+              <button onClick={() => adjustRestTime(60)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">+1m</button>
+              <button onClick={() => adjustRestTime(-5)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">-5s</button>
+              <button onClick={() => adjustRestTime(5)} className="py-3 border-2 border-white hover:bg-white hover:text-black font-bold text-xl transition-all active:scale-95">+5s</button>
             </div>
           </div>
 
@@ -315,10 +330,10 @@ export default function IntervalTimer() {
               {sets}
             </div>
             <div className="grid grid-cols-2 gap-3 w-full mt-auto">
-              <button onClick={() => setSets(Math.max(1, sets - 1))} className="py-4 border-2 border-white hover:bg-white hover:text-black flex justify-center items-center transition-all active:scale-95">
+              <button onClick={() => adjustSets(-1)} className="py-4 border-2 border-white hover:bg-white hover:text-black flex justify-center items-center transition-all active:scale-95">
                 <Minus size={32} strokeWidth={3} />
               </button>
-              <button onClick={() => setSets(sets + 1)} className="py-4 border-2 border-white hover:bg-white hover:text-black flex justify-center items-center transition-all active:scale-95">
+              <button onClick={() => adjustSets(1)} className="py-4 border-2 border-white hover:bg-white hover:text-black flex justify-center items-center transition-all active:scale-95">
                 <Plus size={32} strokeWidth={3} />
               </button>
             </div>
