@@ -199,22 +199,40 @@ export default function IntervalTimer() {
     const isRest = currentPhase === 'rest';
     const isFinished = currentPhase === 'finished';
     
-    let bgColor = 'bg-black';
+    let bgColor = '#000000';
     let textColor = 'text-white';
     
     if (isWork) {
-      bgColor = 'bg-[#00FF00]'; // Neon Green
+      bgColor = '#00FF00'; // Neon Green
       textColor = 'text-black';
     } else if (isRest) {
-      bgColor = 'bg-[#00FFFF]'; // Neon Cyan
+      bgColor = '#00FFFF'; // Neon Cyan
       textColor = 'text-black';
     } else if (isFinished) {
-      bgColor = 'bg-[#FFFF00]'; // Neon Yellow
+      bgColor = '#FFFF00'; // Neon Yellow
       textColor = 'text-black';
     }
 
+    const totalPhaseTime = isWork ? workTime : restTime;
+    const progressPercentage = totalPhaseTime > 0 ? (timeLeft / totalPhaseTime) * 100 : 0;
+
     return (
-      <div className={`min-h-screen flex flex-col items-center justify-center ${bgColor} transition-colors duration-300 font-sans selection:bg-black selection:text-white`}>
+      <motion.div 
+        animate={{ backgroundColor: bgColor }}
+        transition={{ duration: 0.5 }}
+        className={`min-h-screen flex flex-col items-center justify-center font-sans selection:bg-black selection:text-white relative overflow-hidden`}
+      >
+        {!isFinished && (
+          <div className="absolute top-0 left-0 right-0 h-3 bg-black/10">
+            <motion.div 
+              className="h-full bg-black/40"
+              initial={{ width: '100%' }}
+              animate={{ width: `${progressPercentage}%` }}
+              transition={{ duration: 1, ease: "linear" }}
+            />
+          </div>
+        )}
+
         <div className="absolute top-6 left-6 right-6 flex justify-between items-center">
           <div className={`text-2xl md:text-4xl font-black uppercase tracking-widest ${textColor}`}>
             Set {currentSet} / {sets}
@@ -232,7 +250,12 @@ export default function IntervalTimer() {
           <motion.h2 
             key={currentPhase}
             initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={
+              isWork && isRunning ? { opacity: 1, y: 0, scale: [1, 1.05, 1], transition: { scale: { repeat: Infinity, duration: 1 } } } :
+              isRest && isRunning ? { opacity: [0.4, 1, 0.4], y: 0, scale: 1, transition: { opacity: { repeat: Infinity, duration: 3 } } } :
+              isFinished ? { opacity: 1, y: [0, -20, 0], transition: { y: { repeat: Infinity, duration: 0.6, ease: "easeInOut" } } } :
+              { opacity: 1, y: 0, scale: 1 }
+            }
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.2 }}
             className={`text-[clamp(4rem,12vw,10rem)] font-black uppercase tracking-tighter mb-2 ${textColor}`}
@@ -245,7 +268,11 @@ export default function IntervalTimer() {
           <motion.div 
             key={timeLeft}
             initial={{ opacity: 0.8, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1,
+              x: (isWork && timeLeft <= 3 && timeLeft > 0) ? [-10, 10, -10, 10, 0] : 0
+            }}
             transition={{ duration: 0.15 }}
             className={`text-[clamp(6rem,25vw,24rem)] font-black leading-none tracking-tighter tabular-nums ${textColor}`}
           >
@@ -266,14 +293,17 @@ export default function IntervalTimer() {
         )}
         
         {isFinished && (
-          <button 
+          <motion.button 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.5, type: "spring" }}
             onClick={stopWorkout} 
             className="mt-12 px-12 py-6 border-8 border-black text-black text-4xl font-black uppercase hover:bg-black hover:text-[#FFFF00] transition-all active:scale-95"
           >
             Finish
-          </button>
+          </motion.button>
         )}
-      </div>
+      </motion.div>
     );
   }
 
